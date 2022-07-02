@@ -81,25 +81,26 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      # - restore_cache:
-            # keys: [backend-build]
+      - restore_cache:
+            keys: [backend-build]
       - run:
             name: analyze back-end
             command: |
               cd backend
               npm install
-              npm audit --audit-level=critical
               npm audit fix --force
+              npm audit --audit-level=critical
+
 workflows:
   default:
     jobs:
-      # - build-frontend
-      # - build-backend
-      # - test-backend:
-          # requires: [build-backend]
-      # - test-frontend:
-          # requires: [build-frontend]
-      # - scan-frontend:
-          # requires: [test-frontend]
-      - scan-backend
-          # requires: [test-backend]
+      - build-frontend
+      - build-backend
+      - test-backend:
+          requires: [build-backend]
+      - test-frontend:
+          requires: [build-frontend]
+      - scan-frontend:
+          requires: [test-frontend]
+      - scan-backend:
+          requires: [test-backend]
