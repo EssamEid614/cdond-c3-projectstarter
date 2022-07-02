@@ -119,7 +119,8 @@ jobs:
 workflows:
   default:
     jobs:
-      - notify
+      - notify:
+          context: slack-secrets
       - build-frontend
       - build-backend
       - test-backend:
