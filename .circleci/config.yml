@@ -82,7 +82,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-            keys: [frontend-build]
+            keys: [backend-build]
       - run:
             name: analyze back-end
             command: |
@@ -94,13 +94,13 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-backend:
-          requires: [build-backend]
-      - test-frontend:
-          requires: [build-frontend]
-      - scan-frontend:
-          requires: [test-frontend]
-      - scan-backend:
-          requires: [test-backend]
+      # - build-frontend
+      # - build-backend
+      # - test-backend:
+          # requires: [build-backend]
+      # - test-frontend:
+          # requires: [build-frontend]
+      # - scan-frontend:
+          # requires: [test-frontend]
+      - scan-backend
+          # requires: [test-backend]
