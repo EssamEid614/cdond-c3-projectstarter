@@ -119,6 +119,7 @@ jobs:
 workflows:
   default:
     jobs:
+      - notify
       - build-frontend
       - build-backend
       - test-backend:
