@@ -13,8 +13,8 @@ commands:
           when: on_fail
           command: |
             aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-            aws cloudformation delete-stack --stack-name "adenicole-${CIRCLE_WORKFLOW_ID:0:7}-udapeople-stack-backend"
-            aws cloudformation delete-stack --stack-name "adenicole-${CIRCLE_WORKFLOW_ID:0:7}-udapeople-stack-frontend"
+            aws cloudformation delete-stack --stack-name "udapeople-backend--${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -26,9 +26,9 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS=$(curl https://kvdb.io/GbTEKtEnDhURRzriozuSA6/SUCCESS)
-            if(( $SUCCESS==1 )); 
+            # Curl command here to see if there was a successful migration associated with the workflow id, store result in migration variable
+            SUCCESS=$(curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            if(( $SUCCESS!=1 )); 
             then
               cd ~/project/backend
               npm install
@@ -173,7 +173,7 @@ jobs:
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
                 # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
-                curl https://kvdb.io/GbTEKtEnDhURRzriozuSA6/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+                curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi            
   deploy-infrastructure:
     docker:
@@ -257,8 +257,7 @@ jobs:
         - run:
             name: Deploy frontend objects
             command: |
-              ls
-              pwd
+              cd frontend
               tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
               aws s3 cp frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
         - destroy-environment:
