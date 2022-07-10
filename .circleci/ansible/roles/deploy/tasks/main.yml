@@ -2,28 +2,28 @@
   become: true
   unarchive:
     src: /root/project/artifact.tar.gz
-    dest: /home/ubuntu/app
+    dest: /home/ubuntu
     
 
 - name: Install
   become: true
   shell: |
-    cd /home/ubuntu/app/backend
+    cd /home/ubuntu/backend
     npm install
     
 - name: Build
   become: true
   shell: | 
-    cd /home/ubuntu/app/backend
+    cd /home/ubuntu/backend
     npm run build
     
 - name: Run Migrations
   become: true
   shell: | 
-    cd /home/ubuntu/app/backend
+    cd /home/ubuntu/backend
     npm run migrations
     
 - name: Start PM2
   shell: |
-    cd /home/ubuntu/app/backend
-    pm2 start npm -- run start
+    cd /home/ubuntu/backend
+    pm2 start npm --name backend -- start
