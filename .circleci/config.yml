@@ -171,6 +171,8 @@ jobs:
               # Your code here
               exit 1
   destroy-environment:
+    docker: 
+      - image: amazon/aws-cli
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
       # Add parameter here
