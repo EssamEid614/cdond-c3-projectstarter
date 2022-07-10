@@ -1,10 +1,10 @@
-version: 2.1          
-orbs: 
+version: 2.1
+orbs:
   slack: circleci/slack@4.10.1
 jobs:
   notify:
     docker:
-      - image: 'cimg/base:stable'
+      - image: "cimg/base:stable"
     steps:
       - slack/notify:
           custom: |
@@ -63,13 +63,13 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-            keys: [frontend-build]
+          keys: [frontend-build]
       - run:
-            name: Test front-end
-            command: |
-              cd frontend
-              npm install
-              npm run test
+          name: Test front-end
+          command: |
+            cd frontend
+            npm install
+            npm run test
 
   test-backend:
     docker:
@@ -77,27 +77,27 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-            keys: [backend-build]
+          keys: [backend-build]
       - run:
-            name: Test back-end
-            command: |
-              cd backend
-              npm install
-              npm run test
+          name: Test back-end
+          command: |
+            cd backend
+            npm install
+            npm run test
   scan-frontend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
       - restore_cache:
-            keys: [frontend-build]
+          keys: [frontend-build]
       - run:
-            name: analyze front-end
-            command: |
-              cd frontend
-              npm install
-              npm audit fix --force
-              npm audit --audit-level=critical
+          name: analyze front-end
+          command: |
+            cd frontend
+            npm install
+            npm audit fix --force
+            npm audit --audit-level=critical
 
   scan-backend:
     docker:
@@ -105,15 +105,15 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-            keys: [backend-build]
+          keys: [backend-build]
       - run:
-            name: analyze back-end
-            command: |
-              cd backend
-              npm install
-              npm audit fix --force
-              npm audit --audit-level=critical
-              
+          name: analyze back-end
+          command: |
+            cd backend
+            npm install
+            npm audit fix --force
+            npm audit --audit-level=critical
+
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -127,7 +127,6 @@ jobs:
               --tags project="udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
-              exit 1
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -136,18 +135,53 @@ jobs:
               --tags project="udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
-              exit 1
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            # Your code here
+            aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt
             exit 1
       - persist_to_workspace:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      # Here's where you will add some code to rollback on failure      
-
+      - destroy-environment:
+            event: on_fail
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11 # Docker image here that supports Ansible
+    steps:
+        - checkout
+        - add_ssh_keys:
+            fingerprints: [50:fb:a1:11:be:f5:b5:f6:fb:b6:44:ae:48:06:51:9b:ad:bf:2f:7d]
+      - attach_workspace:     # attach workspace
+            at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update tar
+            apk add --update gzip
+            apk add --update ansible
+            pip install awscli --upgrade 
+      - run:
+          name: Configure server
+          command: |
+            # Your code here
+            exit 1
+  destroy-environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      # Add parameter here
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+            exit 1
 
 workflows:
   default:
@@ -161,8 +195,8 @@ workflows:
       - test-frontend:
           requires: [build-frontend]
       - scan-frontend:
-          requires: [test-frontend]
+          requires: [build-frontend]
       - scan-backend:
-          requires: [test-backend]
+          requires: [build-backend]
       - deploy-infrastructure:
-          requires: [scan-backend,scan-frontend]
+          requires: [scan-backend, scan-frontend, test-frontend, test-backend]
