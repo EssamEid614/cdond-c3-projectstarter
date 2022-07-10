@@ -12,9 +12,9 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID}" --recursive
-            aws cloudformation delete-stack --stack-name "adenicole-${CIRCLE_WORKFLOW_ID}-udapeople-stack-backend"
-            aws cloudformation delete-stack --stack-name "adenicole-${CIRCLE_WORKFLOW_ID}-udapeople-stack-frontend"
+            aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+            aws cloudformation delete-stack --stack-name "adenicole-${CIRCLE_WORKFLOW_ID:0:7}-udapeople-stack-backend"
+            aws cloudformation delete-stack --stack-name "adenicole-${CIRCLE_WORKFLOW_ID:0:7}-udapeople-stack-frontend"
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -260,9 +260,9 @@ jobs:
               tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
               aws s3 cp frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
         - destroy-environment:
-            workflow_id: ${CIRCLE_WORKFLOW_ID} 
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
         - revert-migrations:
-            workflow_id: ${CIRCLE_WORKFLOW_ID}
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   deploy-backend:
     docker:
@@ -289,9 +289,9 @@ jobs:
             cat inventory.txt
             cd .circleci/ansible ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID}
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
-          workflow_id: ${CIRCLE_WORKFLOW_ID}
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   smoke-test:
     docker:
@@ -327,9 +327,9 @@ jobs:
             fi
       # Here's where you will add some code to rollback on failure  
       - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID}
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
-          workflow_id: ${CIRCLE_WORKFLOW_ID}  
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}  
 
 workflows:
   default:
