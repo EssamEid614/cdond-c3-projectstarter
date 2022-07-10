@@ -255,7 +255,7 @@ jobs:
             pip install awscli
       - add_ssh_keys:
           fingerprints:
-            - [50:fb:a1:11:be:f5:b5:f6:fb:b6:44:ae:48:06:51:9b:ad:bf:2f:7d]
+            [50:fb:a1:11:be:f5:b5:f6:fb:b6:44:ae:48:06:51:9b:ad:bf:2f:7d]
       - attach_workspace:
           at: ~/
       - run:
@@ -295,4 +295,3 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
-          
