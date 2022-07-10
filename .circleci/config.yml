@@ -286,7 +286,7 @@ jobs:
           command: |
             cd . 
             echo "Contents  of the inventory.txt file is -------"
-            cat inventory.txt
+            cat .circleci/ansible/inventory.txt
             tar -czvf artifact.tar.gz ./backend
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       - destroy-environment:
