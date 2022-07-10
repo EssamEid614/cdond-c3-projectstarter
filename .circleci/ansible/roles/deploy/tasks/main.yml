@@ -1,7 +1,7 @@
 - name: Move files to server
   become: true
   unarchive:
-    src: /root/project/backend.tar.gz
+    src: /root/project/artifact.tar.gz
     dest: /home/ubuntu/app
     
 
