@@ -3,8 +3,6 @@ orbs:
   slack: circleci/slack@4.10.1
 commands:
   destroy-environment:
-    docker:
-      - image: amazon/aws-cli
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
       workflow_id:
@@ -14,9 +12,10 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
-            aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-            exit 1
+            aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID}" --recursive
+            aws cloudformation delete-stack --stack-name "adenicole-${CIRCLE_WORKFLOW_ID}-udapeople-stack-backend"
+            aws cloudformation delete-stack --stack-name "adenicole-${CIRCLE_WORKFLOW_ID}-udapeople-stack-frontend"
+
 jobs:
   notify:
     docker:
@@ -151,12 +150,12 @@ jobs:
             npm run migrations > migrations_dump.txt
       - run:
           name: Send migration status to kvdb.io OR memstash.io
-          command: |   
-              if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
-              then
-                  # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
-                  curl https://kvdb.io/Gn4dG8D29yUb9AjZbBrVQG/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
-              fi
+          command: |
+            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            then
+                # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
+                curl https://kvdb.io/Gn4dG8D29yUb9AjZbBrVQG/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+            fi
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -228,3 +227,7 @@ workflows:
           requires: [build-backend]
       - deploy-infrastructure:
           requires: [scan-backend, scan-frontend, test-frontend, test-backend]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
