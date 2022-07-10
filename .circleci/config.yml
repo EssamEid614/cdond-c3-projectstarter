@@ -243,32 +243,32 @@ jobs:
         - destroy-environment:
             workflow_id: ${CIRCLE_WORKFLOW_ID} 
             
-    deploy-backend:
-      docker:
-        - image: python:3.7-alpine3.11
-      steps:
-        - checkout
-        - run:
-            name: Install dependencies
-            command: |
-              apk add --update tar gzip ansible nodejs npm curl
-              pip install awscli
-        - add_ssh_keys:
-            fingerprints:
-              - [50:fb:a1:11:be:f5:b5:f6:fb:b6:44:ae:48:06:51:9b:ad:bf:2f:7d]
-        - attach_workspace:
-            at: ~/
-        - run:
-            name: Deploy backend
-            no_output_timeout: 35m
-            command: |
-              tar -C backend -czvf artifact.tar.gz
-              cd backend
-              echo "Contents  of the inventory.txt file is -------"
-              cat inventory.txt
-              cd .circleci/ansible ansible-playbook -i inventory.txt deploy-backend.yml
-        - destroy-environment:
-            workflow_id: ${CIRCLE_WORKFLOW_ID}
+  deploy-backend:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update tar gzip ansible nodejs npm curl
+            pip install awscli
+      - add_ssh_keys:
+          fingerprints:
+            - [50:fb:a1:11:be:f5:b5:f6:fb:b6:44:ae:48:06:51:9b:ad:bf:2f:7d]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Deploy backend
+          no_output_timeout: 35m
+          command: |
+            tar -C backend -czvf artifact.tar.gz
+            cd backend
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            cd .circleci/ansible ansible-playbook -i inventory.txt deploy-backend.yml
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}
 
 workflows:
   default:
