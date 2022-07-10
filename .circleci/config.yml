@@ -156,20 +156,20 @@ jobs:
         - checkout
         - add_ssh_keys:
             fingerprints: [50:fb:a1:11:be:f5:b5:f6:fb:b6:44:ae:48:06:51:9b:ad:bf:2f:7d]
-      - attach_workspace:     # attach workspace
-            at: ~/
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update tar
-            apk add --update gzip
-            apk add --update ansible
-            pip install awscli --upgrade 
-      - run:
-          name: Configure server
-          command: |
-            # Your code here
-            exit 1
+        - attach_workspace:     # attach workspace
+              at: ~/
+        - run:
+            name: Install dependencies
+            command: |
+              apk add --update tar
+              apk add --update gzip
+              apk add --update ansible
+              pip install awscli --upgrade 
+        - run:
+            name: Configure server
+            command: |
+              # Your code here
+              exit 1
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
