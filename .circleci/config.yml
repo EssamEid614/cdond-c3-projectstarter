@@ -162,8 +162,6 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - destroy-environment:
-          event: on_fail
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11 # Docker image here that supports Ansible
