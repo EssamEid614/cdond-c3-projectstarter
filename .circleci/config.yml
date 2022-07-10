@@ -284,11 +284,11 @@ jobs:
           name: Deploy backend
           no_output_timeout: 35m
           command: |
-            tar -czvf artifact.tar.gz backend
+            cd . 
             echo "Contents  of the inventory.txt file is -------"
-            cd .circleci/ansible
             cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            tar -czvf artifact.tar.gz ./backend
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
