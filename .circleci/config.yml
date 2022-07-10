@@ -154,8 +154,8 @@ jobs:
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
                 # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
-                curl https://kvdb.io/Gn4dG8D29yUb9AjZbBrVQG/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
-            fi
+                curl https://kvdb.io/GbTEKtEnDhURRzriozuSA6/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+            fi            
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -210,6 +210,65 @@ jobs:
           name: Configure server
           command: |
             cd .circleci/ansible ansible-playbook -i inventory.txt configure-server.yml
+            
+  deploy-frontend:
+      docker:
+        - image: circleci/node:13.8.0
+      steps:
+        - checkout
+        - run:
+            name: Install AWS CLI
+            command: |
+              sudo apt-get update && sudo apt-get install -yy less
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install
+        - attach_workspace:
+            at: ~/
+        - run:
+            name: Get backend url
+            command: |
+              export BACKEND_IP=`tail -1 ~/inventory.txt`
+              export API_URL="http://${BACKEND_IP}:3030"
+              echo "${API_URL}"
+              echo "API_URL=${API_URL}" > frontend/.env
+              cd frontend
+              sudo npm install
+              sudo npm run build
+        - run:
+            name: Deploy frontend objects
+            command: |
+              tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+              aws s3 cp frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+        - destroy-environment:
+            workflow_id: ${CIRCLE_WORKFLOW_ID} 
+            
+    deploy-backend:
+      docker:
+        - image: python:3.7-alpine3.11
+      steps:
+        - checkout
+        - run:
+            name: Install dependencies
+            command: |
+              apk add --update tar gzip ansible nodejs npm curl
+              pip install awscli
+        - add_ssh_keys:
+            fingerprints:
+              - [50:fb:a1:11:be:f5:b5:f6:fb:b6:44:ae:48:06:51:9b:ad:bf:2f:7d]
+        - attach_workspace:
+            at: ~/
+        - run:
+            name: Deploy backend
+            no_output_timeout: 35m
+            command: |
+              tar -C backend -czvf artifact.tar.gz
+              cd backend
+              echo "Contents  of the inventory.txt file is -------"
+              cat inventory.txt
+              cd .circleci/ansible ansible-playbook -i inventory.txt deploy-backend.yml
+        - destroy-environment:
+            workflow_id: ${CIRCLE_WORKFLOW_ID}
 
 workflows:
   default:
@@ -232,3 +291,7 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
