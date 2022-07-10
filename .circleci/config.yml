@@ -283,7 +283,7 @@ jobs:
           name: Deploy backend
           no_output_timeout: 35m
           command: |
-            tar -C backend -czvf artifact.tar.gz
+            tar -czvf artifact.tar.gz backend
             cd backend
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
