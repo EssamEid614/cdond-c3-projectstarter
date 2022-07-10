@@ -114,6 +114,21 @@ jobs:
             npm audit fix --force
             npm audit --audit-level=critical
 
+  destroy-environment:
+    docker:
+      - image: amazon/aws-cli
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      # Add parameter here
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+            exit 1
+
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -126,7 +141,7 @@ jobs:
               --template-file .circleci/files/backend.yml \
               --tags project="udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -134,7 +149,7 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --tags project="udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -148,41 +163,28 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       - destroy-environment:
-            event: on_fail
+          event: on_fail
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11 # Docker image here that supports Ansible
     steps:
-        - checkout
-        - add_ssh_keys:
-            fingerprints: [50:fb:a1:11:be:f5:b5:f6:fb:b6:44:ae:48:06:51:9b:ad:bf:2f:7d]
-        - attach_workspace:     # attach workspace
-              at: ~/
-        - run:
-            name: Install dependencies
-            command: |
-              apk add --update tar
-              apk add --update gzip
-              apk add --update ansible
-              pip install awscli --upgrade 
-        - run:
-            name: Configure server
-            command: |
-              # Your code here
-              exit 1
-  destroy-environment:
-    docker: 
-      - image: amazon/aws-cli
-    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    parameters:
-      # Add parameter here
-    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            [50:fb:a1:11:be:f5:b5:f6:fb:b6:44:ae:48:06:51:9b:ad:bf:2f:7d]
+      - attach_workspace: # attach workspace
+          at: ~/
       - run:
-          name: Destroy environments
-          when: on_fail
+          name: Install dependencies
           command: |
-            aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
-            aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+            apk add --update tar
+            apk add --update gzip
+            apk add --update ansible
+            pip install awscli --upgrade
+      - run:
+          name: Configure server
+          command: |
+            # Your code here
             exit 1
 
 workflows:
@@ -202,4 +204,3 @@ workflows:
           requires: [build-backend]
       - deploy-infrastructure:
           requires: [scan-backend, scan-frontend, test-frontend, test-backend]
-
