@@ -12,7 +12,7 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+            aws s3 rm "s3://udapeople-510614" --recursive
             aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
@@ -259,7 +259,7 @@ jobs:
             command: |
               cd frontend
               tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-              aws s3 cp dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+              aws s3 cp dist "s3://udapeople-510614" --recursive
         - destroy-environment:
             workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
         - revert-migrations:
@@ -270,14 +270,14 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            [50:fb:a1:11:be:f5:b5:f6:fb:b6:44:ae:48:06:51:9b:ad:bf:2f:7d]
       - run:
           name: Install dependencies
           command: |
             apk add --update tar gzip ansible nodejs npm curl
             pip install awscli
-      - add_ssh_keys:
-          fingerprints:
-            [50:fb:a1:11:be:f5:b5:f6:fb:b6:44:ae:48:06:51:9b:ad:bf:2f:7d]
       - attach_workspace:
           at: ~/
       - run:
@@ -317,7 +317,7 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.eu-central-1.amazonaws.com/#/employees"            
+            URL="http://udapeople-510614.s3-website.eu-central-1.amazonaws.com/#/employees"            
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
