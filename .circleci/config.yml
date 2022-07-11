@@ -247,8 +247,9 @@ jobs:
         - run:
             name: Get backend url
             command: |
-              ip=$(curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/backendip)
-              export API_URL="http://${ip}:3030"
+              ls
+              export BACKEND_IP=`tail -1 .circleci/ansible/inventory.txt`
+              export API_URL="http://${BACKEND_IP}:3030"
               echo "${API_URL}"
               echo "API_URL=${API_URL}" > frontend/.env
               cd frontend
@@ -378,4 +379,3 @@ workflows:
           requires: [run-migrations]
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
-          
