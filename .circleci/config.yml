@@ -12,7 +12,7 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws s3 rm "s3://udapeople-510614" --recursive
+            aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
             aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
@@ -20,7 +20,7 @@ commands:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
       workflow_id:
-        type: string    
+        type: string
     steps:
       - run:
           name: Revert migrations
@@ -34,7 +34,7 @@ commands:
               npm install
               npm run migrations:revert
             fi
-            
+
 jobs:
   notify:
     docker:
@@ -174,7 +174,7 @@ jobs:
             then
                 # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
                 curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
-            fi            
+            fi
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -229,42 +229,42 @@ jobs:
           name: Configure server
           command: |
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
-            
+
   deploy-frontend:
-      docker:
-        - image: circleci/node:13.8.0
-      steps:
-        - checkout
-        - run:
-            name: Install AWS CLI
-            command: |
-              sudo apt-get update && sudo apt-get install -yy less
-              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-              unzip awscliv2.zip
-              sudo ./aws/install
-        - attach_workspace:
-            at: ~/
-        - run:
-            name: Get backend url
-            command: |
-              ls
-              export BACKEND_IP=`tail -1 .circleci/ansible/inventory.txt`
-              export API_URL="http://${BACKEND_IP}:3030"
-              echo "${API_URL}"
-              echo "API_URL=${API_URL}" > frontend/.env
-              cd frontend
-              sudo npm install
-              sudo npm run build
-        - run:
-            name: Deploy frontend objects
-            command: |
-              cd frontend
-              tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-              aws s3 cp dist "s3://udapeople-510614" --recursive
-        - destroy-environment:
-            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
-        - revert-migrations:
-            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Install AWS CLI
+          command: |
+            sudo apt-get update && sudo apt-get install -yy less
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Get backend url
+          command: |
+            ls
+            export BACKEND_IP=`tail -1 .circleci/ansible/inventory.txt`
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+            echo "API_URL=${API_URL}" > frontend/.env
+            cd frontend
+            sudo npm install
+            sudo npm run build
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd frontend
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 cp dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   deploy-backend:
     docker:
@@ -296,7 +296,7 @@ jobs:
             echo TYPEORM_USERNAME=${TYPEORM_USERNAME} >> backend/.env
             echo TYPEORM_PASSWORD=${TYPEORM_PASSWORD} >> backend/.env
             echo TYPEORM_DATABASE=${TYPEORM_DATABASE} >> backend/.env
-            cat backend/.env      
+            cat backend/.env
       - run:
           name: Deploy backend
           no_output_timeout: 35m
@@ -315,7 +315,7 @@ jobs:
 
   smoke-test:
     docker:
-      # Lightweight Docker image 
+      # Lightweight Docker image
       - image: 18120211/aws-ansible-22.04
     steps:
       # Checkout code from git
@@ -337,7 +337,7 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-510614.s3-website.us-east-1.amazonaws.com/#/employees"            
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.eu-central-1.amazonaws.com/#/employees"            
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
@@ -346,11 +346,11 @@ jobs:
             else
             exit 1
             fi
-      # Here's where you will add some code to rollback on failure  
-      # - destroy-environment:
-      #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-      # - revert-migrations:
-      #     workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}  
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
 workflows:
   default:
