@@ -57,7 +57,7 @@ jobs:
               ]
             }
           event: always
-      -revert-migrations
+      - revert-migrations
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
