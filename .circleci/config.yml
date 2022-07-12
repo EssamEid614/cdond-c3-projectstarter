@@ -365,7 +365,7 @@ jobs:
             # Fetch the Old workflow ID
             export OldWorkflowID=$(aws cloudformation \
             list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-            --no-paginate --output text)
+            --no-paginate --output text|  grep -o -P '.{0,7}$')
             echo $OldWorkflowID
             curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/oldWorkFlowId  -d "$OldWorkflowID" --insecure
             aws cloudformation deploy \
