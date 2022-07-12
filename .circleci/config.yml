@@ -308,7 +308,7 @@ jobs:
             echo "Contents  of the inventory.txt file is -------"
             cat .circleci/ansible/inventory.txt
             export BACKEND_IP=`tail -1 .circleci/ansible/inventory.txt`
-            curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/backendip -d "$BACKEND_IP" ---insecure
+            curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/backendip -d "$BACKEND_IP" --insecure
             tar -czvf artifact.tar.gz ./backend
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       - destroy-environment:
