@@ -49,7 +49,7 @@ jobs:
                   "fields": [
                     {
                       "type": "plain_text",
-                      "text": "*starting a new deployment!*",
+                      "text": "*starting a new deployment!* worflowid: ${CIRCLE_WORKFLOW_ID:0:7}",
                       "emoji": true
                     }
                   ]
