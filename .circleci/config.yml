@@ -18,22 +18,22 @@ commands:
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
-    parameters:
-      workflow_id:
-        type: string
+    # parameters:
+      # workflow_id:
+        # type: string
     steps:
       - run:
           name: Revert migrations
-          when: on_fail
+          # when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in migration variable
-            SUCCESS=$(curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/migration_${CIRCLE_WORKFLOW_ID:0:7})
-            if(( $SUCCESS!=1 )); 
-            then
+            # SUCCESS=$(curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/migration_${CIRCLE_WORKFLOW_ID:0:7} --insecure)
+            # if(( $SUCCESS!=1 )); 
+            # then
               cd ~/project/backend
               npm install
               npm run migrations:revert
-            fi
+            # fi
 
 jobs:
   notify:
@@ -57,6 +57,7 @@ jobs:
               ]
             }
           event: always
+      -revert-migrations
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -176,7 +177,7 @@ jobs:
                 # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
                 echo "posting to kvdb"
                 echo "https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/migration_${CIRCLE_WORKFLOW_ID:0:7}"
-                curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+                curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1' --insecure
             fi
   deploy-infrastructure:
     docker:
@@ -308,7 +309,7 @@ jobs:
             echo "Contents  of the inventory.txt file is -------"
             cat .circleci/ansible/inventory.txt
             export BACKEND_IP=`tail -1 .circleci/ansible/inventory.txt`
-            curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/backendip -d "$BACKEND_IP"
+            curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/backendip -d "$BACKEND_IP" ---insecure
             tar -czvf artifact.tar.gz ./backend
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       - destroy-environment:
@@ -327,7 +328,7 @@ jobs:
           name: Backend smoke test.
           command: |
             # Fetch and prepare the BACKEND_IP env var
-            ip=$(curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/backendip)
+            ip=$(curl https://kvdb.io/HEQp43YFYGj56DGfK6G1T4/backendip --insecure)
             export API_URL="http://${ip}:3030"
             echo "${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
