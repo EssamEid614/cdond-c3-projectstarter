@@ -371,29 +371,29 @@ jobs:
 workflows:
   default:
     jobs:
-      - notify:
-          context: slack-secrets
-      - build-frontend
-      - build-backend
-      - test-backend:
-          requires: [build-backend]
-      - test-frontend:
-          requires: [build-frontend]
-      - scan-frontend:
-          requires: [build-frontend]
-      - scan-backend:
-          requires: [build-backend]
-      - deploy-infrastructure:
-          requires: [scan-backend, scan-frontend, test-frontend, test-backend]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
-      cloudfront-update:
-          requires: [smoke-test]
+      # - notify:
+      #     context: slack-secrets
+      # - build-frontend
+      # - build-backend
+      # - test-backend:
+      #     requires: [build-backend]
+      # - test-frontend:
+      #     requires: [build-frontend]
+      # - scan-frontend:
+      #     requires: [build-frontend]
+      # - scan-backend:
+      #     requires: [build-backend]
+      # - deploy-infrastructure:
+      #     requires: [scan-backend, scan-frontend, test-frontend, test-backend]
+      # - configure-infrastructure:
+      #     requires: [deploy-infrastructure]
+      - run-migrations
+      #     requires: [configure-infrastructure]
+      # - deploy-frontend:
+      #     requires: [run-migrations]
+      # - deploy-backend:
+      #     requires: [run-migrations]
+      # - smoke-test:
+      #     requires: [deploy-backend, deploy-frontend]
+      # cloudfront-update:
+      #     requires: [smoke-test]
